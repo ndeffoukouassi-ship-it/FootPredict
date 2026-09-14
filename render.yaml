@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: footpredict-api-valentin
+    runtime: python
+    plan: free
+    rootDir: api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: API_FOOTBALL_KEY
+        sync: false
+      - key: REDIS_URL
+        value: redis://localhost:6379/0
+
+  - type: web
+    name: footpredict-valentin
+    runtime: node
+    plan: free
+    rootDir: web
+    buildCommand: npm install && npm run build
+    startCommand: npm run start -- --port $PORT
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://footpredict-api-valentin.onrender.com/api/v1
