@@ -15,13 +15,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <body className={inter.className}>
         <QueryProvider>
-          <div className="min-h-screen bg-zinc-950 text-zinc-100">
-            <header className="border-b border-zinc-800 bg-zinc-900/80 backdrop-blur sticky top-0 z-50">
+          <div className="min-h-screen bg-slate-800 text-zinc-100">
+            <header className="border-b border-slate-500 bg-slate-700/80 backdrop-blur sticky top-0 z-50">
               <div className="container mx-auto px-4 h-14 flex items-center justify-between">
                 <div className="font-bold text-xl tracking-tight">
                   Foot<span className="text-emerald-400">Predict</span>
                 </div>
-                <nav className="text-sm text-zinc-400">Analyses • Pronostics • Forme</nav>
+                <nav className="text-sm text-slate-200">Analyses • Pronostics • Forme</nav>
               </div>
             </header>
             <main className="container mx-auto px-4 py-8">{children}</main>
