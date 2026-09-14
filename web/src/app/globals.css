@@ -3,12 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #dbeafe;
+  --foreground: #0f172a;
 }
 
+html,
 body {
+  min-height: 100%;
+}
+
+body,
+main,
+.min-h-screen {
   color: var(--foreground);
-  background: var(--background);
+  background: linear-gradient(
+    135deg,
+    #dbeafe 0%,
+    #bfdbfe 45%,
+    #e0f2fe 100%
+  ) !important;
+  background-attachment: fixed !important;
   font-family: system-ui, -apple-system, sans-serif;
 }
