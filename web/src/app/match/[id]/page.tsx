@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { getMatchAnalysis, getPrediction } from "@/lib/api";
 import PredictionCard from "@/components/match/PredictionCard";
 
@@ -31,13 +32,14 @@ export default function MatchPage() {
   }
 
   if (!analysis || !prediction) {
-    return <div className="text-red-400">Match introuvable ou erreur API</div>;
+    return <div className="space-y-4"><div className="text-red-400">Match introuvable ou erreur API</div><Link href="/" className="inline-flex rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white">← Retour aux matchs</Link></div>;
   }
 
   const { fixture } = analysis;
 
   return (
     <div className="space-y-8 max-w-4xl">
+      <Link href="/" className="inline-flex min-h-12 items-center rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-500">← Retour aux matchs</Link>
       {/* Header match */}
       <div className="bg-slate-700 border border-slate-500 rounded-2xl p-6">
         <div className="text-sm text-slate-300 mb-2">
@@ -85,6 +87,7 @@ export default function MatchPage() {
           </div>
         </div>
       )}
+      <Link href="/" className="flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-500">← Terminer l’analyse et retourner aux matchs</Link>
     </div>
   );
 }
