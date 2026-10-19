@@ -32,18 +32,20 @@ async def get_prediction(fixture_id: int):
         )
 
         recommended = []
-        if prediction.btts_yes >= 0.58:
+        if prediction.analysis['sample_size'] >= 5 and prediction.btts_yes >= 0.58:
             recommended.append("BTTS Oui")
-        if prediction.home_win >= 0.48:
+        if prediction.analysis['sample_size'] < 5:
+            recommended = ['Données insuffisantes : match à éviter']
+        elif prediction.home_win >= 0.48:
             recommended.append("1 (Victoire domicile)")
         elif prediction.away_win >= 0.42:
             recommended.append("2 (Victoire extérieur)")
         elif prediction.draw >= 0.30:
             recommended.append("X (Nul)")
         
-        if prediction.over_25 >= 0.55:
+        if prediction.analysis['sample_size'] >= 5 and prediction.over_25 >= 0.55:
             recommended.append("Over 2.5")
-        elif prediction.under_25 >= 0.60:
+        elif prediction.analysis['sample_size'] >= 5 and prediction.under_25 >= 0.60:
             recommended.append("Under 2.5")
 
         double_chances = {
@@ -52,7 +54,7 @@ async def get_prediction(fixture_id: int):
             "12 (Une équipe gagne)": prediction.double_chance_12,
         }
         best_dc, best_dc_value = max(double_chances.items(), key=lambda item: item[1])
-        if best_dc_value >= 0.70:
+        if prediction.analysis['sample_size'] >= 5 and best_dc_value >= 0.70:
             recommended.append(best_dc)
 
         return PredictionResponse(
