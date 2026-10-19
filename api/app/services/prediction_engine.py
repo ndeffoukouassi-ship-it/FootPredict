@@ -32,13 +32,12 @@ class MatchPrediction:
 
 
 class PredictionEngine:
-    """Moteur V2 : forme pondérée, buts attendus et matrice de Poisson."""
+    """Moteur V11 : forme pondérée et probabilités dérivées de matrices de Poisson."""
 
     @staticmethod
     def _team_stats(fixtures: List[Dict], team_id: int) -> Dict[str, float]:
         rows = []
-        weights = [1.00, 0.92, 0.84, 0.76, 0.68, 0.60, 0.55, 0.55, 0.55, 0.55]
-        for i, fix in enumerate(fixtures[:10]):
+        for i, fix in enumerate(fixtures[:20]):
             teams, goals = fix.get("teams", {}), fix.get("goals", {})
             home_id = teams.get("home", {}).get("id")
             away_id = teams.get("away", {}).get("id")
@@ -47,7 +46,7 @@ class PredictionEngine:
                 continue
             gf, ga = (hg, ag) if team_id == home_id else (ag, hg)
             points = 3 if gf > ga else 1 if gf == ga else 0
-            rows.append((weights[min(i, len(weights) - 1)], gf, ga, points))
+            rows.append((0.92 ** i, gf, ga, points))
 
         if not rows:
             return {"matches": 0, "gf": 1.2, "ga": 1.2, "form": 0.5}
@@ -89,10 +88,17 @@ class PredictionEngine:
             return sum(p for hg, ag, p in matrix if hg + ag > line)
 
         likely_scores = [{"score": f"{hg}-{ag}", "probability": round(p, 3)}
-                         for hg, ag, p in sorted(matrix, key=lambda x: x[2], reverse=True)[:3]]
-        first_half_home, first_half_away = home_win * 0.62, away_win * 0.62
-        first_half_draw = 1 - first_half_home - first_half_away
-        sample_reliability = min(home["matches"], away["matches"]) / 10
+                         for hg, ag, p in sorted(matrix, key=lambda x: x[2], reverse=True)[:5]]
+        # Approximation: chaque mi-temps recoit la moitie des buts attendus.
+        half_matrix = [
+            (hg, ag, self._poisson(hg, lambda_home / 2) * self._poisson(ag, lambda_away / 2))
+            for hg in range(8) for ag in range(8)
+        ]
+        half_mass = sum(p for _, _, p in half_matrix)
+        first_half_home = sum(p for hg, ag, p in half_matrix if hg > ag) / half_mass
+        first_half_draw = sum(p for hg, ag, p in half_matrix if hg == ag) / half_mass
+        first_half_away = sum(p for hg, ag, p in half_matrix if hg < ag) / half_mass
+        sample_reliability = min(home["matches"], away["matches"]) / 20
         balance = 1 - abs(home_win - away_win)
         chance_factor = self._clamp(balance * 55 + (1 - sample_reliability) * 45, 5, 95)
         confidence = self._clamp(88 - chance_factor * 0.43, 45, 85)
@@ -113,6 +119,7 @@ class PredictionEngine:
             "sample_size": min(home["matches"], away["matches"]),
             "h2h_count": len(h2h_fixtures or []), "injuries_count": len(injuries or []),
             "notes": notes,
+            "confidence_warning": "Score heuristique non calibre : ne represente pas un taux de reussite valide.",
         }
         return MatchPrediction(
             fixture_id=fixture_id, home_win=round(home_win, 3), draw=round(draw, 3),

@@ -31,11 +31,11 @@ export default function PredictionCard({ prediction }: { prediction: Prediction 
       <div className="p-5 pb-4 flex items-center justify-between border-b border-slate-500">
         <h3 className="text-lg font-semibold">Pronostics</h3>
         <span className="text-sm bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full">
-          Confiance {prediction.confidence}%
+          Indice indicatif {prediction.confidence}%
         </span>
       </div>
 
-      <div className="p-5 space-y-8">
+      <div className="p-5 space-y-8">\n        <p className="text-xs text-amber-200">Indice non calibré : ce chiffre ne garantit pas le résultat du match.</p>
         {/* 1X2 */}
         <section className="space-y-3">
           <h4 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">
