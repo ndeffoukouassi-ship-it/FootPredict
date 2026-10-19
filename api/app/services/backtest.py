@@ -29,10 +29,13 @@ def evaluate(fixtures, limit=1000, min_history=5):
         away = (teams.get("away") or {}).get("id")
         hg, ag = goals.get("home"), goals.get("away")
         status = (fixture.get("status") or {}).get("short")
-        if not (home and away and isinstance(hg, int) and isinstance(ag, int) and status in ("FT", "AET", "PEN")):
+        if not (home and away and isinstance(hg, int) and isinstance(ag, int) and status == "FT"):
             skipped["invalid_or_incomplete"] += 1
             continue
-        home_hist, away_hist = history[home][-20:][::-1], history[away][-20:][::-1]
+        # Strictly older kickoffs only: matches at the same time cannot leak.
+        kickoff = fixture.get("date", "")
+        home_hist = [r for r in reversed(history[home]) if r["fixture"]["date"] < kickoff][:20]
+        away_hist = [r for r in reversed(history[away]) if r["fixture"]["date"] < kickoff][:20]
         if len(home_hist) >= min_history and len(away_hist) >= min_history and len(scored) < limit:
             pred = engine.predict(fixture.get("id", 0), home, away, home_hist, away_hist)
             # Winner classification uses regulation goals, when available.
