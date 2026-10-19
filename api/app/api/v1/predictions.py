@@ -16,8 +16,8 @@ async def get_prediction(fixture_id: int):
         home_id = raw["teams"]["home"]["id"]
         away_id = raw["teams"]["away"]["id"]
 
-        home_last = await football_api.get_last_fixtures(home_id, last=10)
-        away_last = await football_api.get_last_fixtures(away_id, last=10)
+        home_last = await football_api.get_last_fixtures(home_id, last=20)
+        away_last = await football_api.get_last_fixtures(away_id, last=20)
         h2h = await football_api.get_head_to_head(home_id, away_id, last=8)
         injuries = await football_api.get_injuries(fixture_id)
 
