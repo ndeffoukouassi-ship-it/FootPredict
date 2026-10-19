@@ -1,0 +1,60 @@
+name: FootPredict V11 historical backtest
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "Season starting year (e.g. 2024)"
+        required: true
+        default: "2024"
+        type: string
+      limit:
+        description: "Maximum number of evaluated fixtures"
+        required: true
+        default: "1000"
+        type: string
+permissions:
+  contents: read
+jobs:
+  historical-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Validate inputs
+        env:
+          SEASON: ${{ inputs.season }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          python - <<'PY'
+          import os
+          year = int(os.environ["SEASON"])
+          limit = int(os.environ["LIMIT"])
+          assert 2010 <= year <= 2025, "Use a completed season"
+          assert 1 <= limit <= 1000, "Limit must be between 1 and 1000"
+          PY
+      - name: Fetch completed fixtures
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          SEASON: ${{ inputs.season }}
+        run: |
+          test -n "$API_FOOTBALL_KEY" || { echo "Missing API_FOOTBALL_KEY repository secret"; exit 1; }
+          python -m app.services.collect_history --league 39 --season "$SEASON" --league 140 --season "$SEASON" --league 78 --season "$SEASON" --league 135 --season "$SEASON" --output history.json
+      - name: Score out-of-sample match history
+        env:
+          LIMIT: ${{ inputs.limit }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: python -m app.services.backtest --input history.json --limit "$LIMIT" --output backtest-report.json
+      - name: Upload report (not private raw history)
+        uses: actions/upload-artifact@v4
+        with:
+          name: v11-backtest-report
+          path: api/backtest-report.json
+          retention-days: 7
