@@ -24,10 +24,10 @@ async def fetch_history(leagues, seasons):
             )
             response.raise_for_status()
             payload = response.json()
-            if not isinstance(payload.get("response"), list):
-                raise RuntimeError("Malformed API response: fixtures list missing")
             if payload.get("errors"):
                 raise RuntimeError(f"API-Football returned an error for league {league}, season {season}: {payload['errors']}")
+            if not isinstance(payload.get("response"), list):
+                raise RuntimeError("Malformed API response: fixtures list missing")
             for fixture in payload.get("response", []):
                 if (fixture.get("fixture", {}).get("status") or {}).get("short") != "FT":
                     continue
