@@ -3,6 +3,8 @@ on:
   push:
     branches: [feature/android-apk]
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 jobs:
   apk:
     runs-on: ubuntu-latest
